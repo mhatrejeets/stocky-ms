@@ -51,8 +51,12 @@ func (h *RewardHandler) CreateReward(c *gin.Context) {
 
 func (h *RewardHandler) GetTodayStocks(c *gin.Context) {
 	userID := c.Param("userId")
-	// TODO: Call service/repo to get today's rewards
-	c.JSON(http.StatusOK, gin.H{"rewards": []interface{}{}})
+	rewards, err := h.Service.ListRewardsForDate(c.Request.Context(), userID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"rewards": rewards})
 }
 
 func (h *RewardHandler) GetHistoricalINR(c *gin.Context) {
@@ -61,18 +65,30 @@ func (h *RewardHandler) GetHistoricalINR(c *gin.Context) {
 	to := c.Query("to")
 	page := c.Query("page")
 	size := c.Query("size")
-	// TODO: Call service/repo to get historical INR values
-	c.JSON(http.StatusOK, gin.H{"historical_inr": []interface{}{}})
+	result, err := h.Service.GetHistoricalINR(c.Request.Context(), userID, from, to, page, size)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"historical_inr": result})
 }
 
 func (h *RewardHandler) GetStats(c *gin.Context) {
 	userID := c.Param("userId")
-	// TODO: Call service/repo to get stats
-	c.JSON(http.StatusOK, gin.H{"stats": gin.H{}})
+	stats, err := h.Service.GetStats(c.Request.Context(), userID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"stats": stats})
 }
 
 func (h *RewardHandler) GetPortfolio(c *gin.Context) {
 	userID := c.Param("userId")
-	// TODO: Call service/repo to get portfolio
-	c.JSON(http.StatusOK, gin.H{"portfolio": gin.H{}})
+	portfolio, err := h.Service.GetPortfolio(c.Request.Context(), userID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"portfolio": portfolio})
 }

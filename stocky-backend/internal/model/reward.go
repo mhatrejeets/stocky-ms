@@ -6,6 +6,29 @@ import (
 	"github.com/shopspring/decimal"
 )
 
+type HistoricalINR struct {
+	Date     string          `json:"date"`
+	INRValue decimal.Decimal `json:"inr_value"`
+	IsStale  bool            `json:"is_stale"`
+}
+
+type Stats struct {
+	TodayTotalBySymbol map[string]decimal.Decimal `json:"today_total_by_symbol"`
+	PortfolioValueINR  decimal.Decimal            `json:"portfolio_value_inr"`
+}
+
+type Portfolio struct {
+	Holdings          []Holding       `json:"holdings"`
+	PortfolioTotalINR decimal.Decimal `json:"portfolio_total_inr"`
+}
+
+type Holding struct {
+	Symbol        string          `json:"symbol"`
+	TotalShares   decimal.Decimal `json:"total_shares"`
+	CurrentPrice  decimal.Decimal `json:"current_price"`
+	TotalValueINR decimal.Decimal `json:"total_value_inr"`
+}
+
 type Reward struct {
 	ID             string          `json:"id"`
 	UserID         string          `json:"user_id"`
