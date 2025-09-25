@@ -2,7 +2,7 @@ package repo
 
 import (
 	"context"
-	"stocky-backend/internal/model"
+	"github.com/mhatrejeets/stocky-ms/internal/model"
 )
 
 type RewardRepository interface {

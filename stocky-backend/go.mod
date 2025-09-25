@@ -1,4 +1,4 @@
-module github.com/yourusername/stocky-backend
+module github.com/mhatrejeets/stocky-ms
 
 go 1.21
 

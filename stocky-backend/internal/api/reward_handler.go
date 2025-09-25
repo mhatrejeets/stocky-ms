@@ -4,8 +4,8 @@ import (
 	"context"
 	"net/http"
 
-	"stocky-backend/internal/model"
-	"stocky-backend/internal/service"
+	"github.com/mhatrejeets/stocky-ms/internal/model"
+	"github.com/mhatrejeets/stocky-ms/internal/service"
 
 	"github.com/gin-gonic/gin"
 )

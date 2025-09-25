@@ -3,9 +3,9 @@ package main
 import (
 	"os"
 
-
-	"stocky-backend/internal/repo"
-	"stocky-backend/internal/service"
+	"github.com/mhatrejeets/stocky-ms/internal/api"
+	"github.com/mhatrejeets/stocky-ms/internal/repo"
+	"github.com/mhatrejeets/stocky-ms/internal/service"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"

@@ -7,8 +7,8 @@ import (
 	"errors"
 	"time"
 
-	"stocky-backend/internal/model"
-	"stocky-backend/internal/repo"
+	"github.com/mhatrejeets/stocky-ms/internal/model"
+	"github.com/mhatrejeets/stocky-ms/internal/repo"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/shopspring/decimal"
