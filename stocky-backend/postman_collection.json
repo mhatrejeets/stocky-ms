@@ -1,0 +1,45 @@
+{
+  "info": {
+    "name": "Stocky Backend Minimal",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Create Reward",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer <token>", "type": "text" },
+          { "key": "Content-Type", "value": "application/json", "type": "text" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"stock_symbol\": \"RELIANCE\",\n  \"shares\": \"1.000000\",\n  \"rewarded_at\": \"2025-09-25T11:30:00Z\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/v1/reward",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "v1", "reward"]
+        }
+      }
+    },
+    {
+      "name": "Get Portfolio",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer <token>", "type": "text" }
+        ],
+        "url": {
+          "raw": "http://localhost:8080/api/v1/portfolio/user-1",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "v1", "portfolio", "user-1"]
+        }
+      }
+    }
+  ]
+}
