@@ -1,11 +1,11 @@
 build:
-	go build -o stocky-backend ./cmd/api
+	go build -o stocky-backend
 
 run:
-	PORT=8080 go run ./cmd/api/main.go
+	PORT=8080 go run .
 
-docker-build:
-	docker build -t stocky-backend -f deploy/Dockerfile .
+test:
+	go test ./...
 
-docker-up:
-	docker-compose -f deploy/docker-compose.yml up --build
+migrate:
+	sh scripts/run_migrations.sh
