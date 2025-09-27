@@ -9,6 +9,7 @@ import (
 	"github.com/mhatrejeets/stocky-ms/internal/repo"
 	"github.com/mhatrejeets/stocky-ms/internal/service"
 
+	"github.com/IBM/sarama"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 )
@@ -41,7 +42,14 @@ func main() {
 	})
 
 	// Wire up RewardHandler with real repository implementation
-	kafkaProducer := &infra.KafkaProducer{}
+	kafkaConfig := sarama.NewConfig()
+	kafkaConfig.Producer.Return.Successes = true
+	brokers := []string{os.Getenv("KAFKA_BROKERS")}
+	producer, err := sarama.NewSyncProducer(brokers, kafkaConfig)
+	if err != nil {
+		logrus.Fatalf("Failed to initialize Kafka producer: %v", err)
+	}
+	kafkaProducer := &infra.KafkaProducer{Producer: producer}
 
 	// Redis idempotency implementation
 	redisIdem := &infra.RedisIdempotencyStoreImpl{Client: redisClient}

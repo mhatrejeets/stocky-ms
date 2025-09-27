@@ -43,7 +43,7 @@ type Reward struct {
 
 type CreateRewardRequest struct {
 	StockSymbol string `json:"stock_symbol" validate:"required"`
-	Shares      string `json:"shares" validate:"required,decimal"`
+	Shares      string `json:"shares" validate:"required,numeric"`
 	RewardedAt  string `json:"rewarded_at" validate:"required,datetime=2006-01-02T15:04:05Z07:00"`
 }
 
