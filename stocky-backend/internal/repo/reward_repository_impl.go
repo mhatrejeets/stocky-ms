@@ -28,6 +28,49 @@ type RedisIdempotencyStore interface {
 	Get(ctx context.Context, key string) (string, error)
 }
 
+// GetPortfolio returns the user's portfolio: total shares per stock and their current value
+func (r *RewardRepositoryImpl) GetPortfolio(ctx context.Context, userID string) (model.Portfolio, error) {
+	query := `SELECT stock_symbol, SUM(shares) as total_shares FROM rewards WHERE user_id = $1 GROUP BY stock_symbol`
+	rows, err := r.DB.QueryContext(ctx, query, userID)
+	if err != nil {
+		return model.Portfolio{}, err
+	}
+	defer rows.Close()
+	var holdings []model.Holding
+	var totalValue decimal.Decimal
+	for rows.Next() {
+		var symbol string
+		var sharesStr string
+		err := rows.Scan(&symbol, &sharesStr)
+		if err != nil {
+			return model.Portfolio{}, err
+		}
+		shares, _ := decimal.NewFromString(sharesStr)
+		// Fetch current price from stock_prices table
+		var priceStr string
+		err = r.DB.QueryRowContext(ctx, "SELECT price FROM stock_prices WHERE symbol = $1", symbol).Scan(&priceStr)
+		var price decimal.Decimal
+		if err == nil {
+			price, _ = decimal.NewFromString(priceStr)
+		} else {
+			price = decimal.Zero
+		}
+		value := shares.Mul(price)
+		totalValue = totalValue.Add(value)
+		holdings = append(holdings, model.Holding{
+			Symbol:        symbol,
+			TotalShares:   shares,
+			CurrentPrice:  price,
+			TotalValueINR: value,
+		})
+	}
+	portfolio := model.Portfolio{
+		Holdings:          holdings,
+		PortfolioTotalINR: totalValue,
+	}
+	return portfolio, nil
+}
+
 func (r *RewardRepositoryImpl) CreateReward(ctx context.Context, reward model.Reward) (string, error) {
 	// Insert into rewards table
 	query := `INSERT INTO rewards (
@@ -181,8 +224,7 @@ func (r *RewardRepositoryImpl) GetHistoricalINR(ctx context.Context, userID, fro
 }
 
 func (r *RewardRepositoryImpl) GetStats(ctx context.Context, userID string) (model.Stats, error) {
-	// Query stats for a user
-	query := `SELECT stock_symbol, SUM(shares) FROM rewards WHERE user_id = $1 GROUP BY stock_symbol`
+	query := `SELECT stock_symbol, SUM(shares) as total_shares FROM rewards WHERE user_id = $1 GROUP BY stock_symbol`
 	rows, err := r.DB.QueryContext(ctx, query, userID)
 	if err != nil {
 		return model.Stats{}, err
@@ -199,36 +241,17 @@ func (r *RewardRepositoryImpl) GetStats(ctx context.Context, userID string) (mod
 		}
 		shares, _ := decimal.NewFromString(sharesStr)
 		stats.TodayTotalBySymbol[symbol] = shares
-		total = total.Add(shares)
+		// Fetch current price from stock_prices table
+		var priceStr string
+		err = r.DB.QueryRowContext(ctx, "SELECT price FROM stock_prices WHERE symbol = $1", symbol).Scan(&priceStr)
+		var price decimal.Decimal
+		if err == nil {
+			price, _ = decimal.NewFromString(priceStr)
+		} else {
+			price = decimal.Zero
+		}
+		total = total.Add(shares.Mul(price))
 	}
 	stats.PortfolioValueINR = total
 	return stats, nil
-}
-
-func (r *RewardRepositoryImpl) GetPortfolio(ctx context.Context, userID string) (model.Portfolio, error) {
-	// Query portfolio for a user
-	query := `SELECT stock_symbol, SUM(shares) as total_shares FROM rewards WHERE user_id = $1 GROUP BY stock_symbol`
-	rows, err := r.DB.QueryContext(ctx, query, userID)
-	if err != nil {
-		return model.Portfolio{}, err
-	}
-	defer rows.Close()
-	var holdings []model.Holding
-	var totalINR decimal.Decimal
-	for rows.Next() {
-		var h model.Holding
-		var sharesStr string
-		err := rows.Scan(&h.Symbol, &sharesStr)
-		if err != nil {
-			return model.Portfolio{}, err
-		}
-		h.TotalShares, _ = decimal.NewFromString(sharesStr)
-		holdings = append(holdings, h)
-		totalINR = totalINR.Add(h.TotalShares)
-	}
-	portfolio := model.Portfolio{
-		Holdings:          holdings,
-		PortfolioTotalINR: totalINR,
-	}
-	return portfolio, nil
 }

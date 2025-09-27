@@ -62,6 +62,13 @@ func (h *RewardHandler) GetHistoricalINR(c *gin.Context) {
 	to := c.Query("to")
 	page := c.Query("page")
 	size := c.Query("size")
+	// Set default date range if missing
+	if from == "" {
+		from = "2000-01-01T00:00:00Z"
+	}
+	if to == "" {
+		to = "2100-01-01T00:00:00Z"
+	}
 	result, err := h.Service.GetHistoricalINR(c.Request.Context(), userID, from, to, page, size)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
