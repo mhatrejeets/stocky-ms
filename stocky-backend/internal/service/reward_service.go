@@ -47,7 +47,6 @@ func (s *RewardService) CreateReward(ctx context.Context, userID string, req mod
 	uniqueHash := sha256.Sum256([]byte(uniqueStr))
 	uniqueHashHex := hex.EncodeToString(uniqueHash[:])
 
-	// Dedup check
 	exists, existingID := s.Repo.ExistsByUniqueHashOrIdempotency(ctx, uniqueHashHex, idempotencyKey)
 	if exists {
 		return CreateRewardResult{existingID, true, errors.New("duplicate reward")}

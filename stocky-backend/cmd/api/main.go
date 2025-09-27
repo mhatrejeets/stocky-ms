@@ -4,6 +4,8 @@ import (
 	"os"
 
 	"github.com/mhatrejeets/stocky-ms/internal/api"
+	"github.com/mhatrejeets/stocky-ms/internal/auth"
+	"github.com/mhatrejeets/stocky-ms/internal/infra"
 	"github.com/mhatrejeets/stocky-ms/internal/repo"
 	"github.com/mhatrejeets/stocky-ms/internal/service"
 
@@ -16,6 +18,17 @@ func main() {
 	logrus.SetFormatter(&logrus.TextFormatter{FullTimestamp: true})
 	logrus.SetLevel(logrus.InfoLevel)
 
+	// Initialize DB
+	db, err := infra.NewDB()
+	if err != nil {
+		logrus.Fatalf("Failed to connect to DB: %v", err)
+	}
+	defer db.Close()
+
+	// Initialize Redis
+	redisClient := infra.NewRedisClient()
+	defer redisClient.Close()
+
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"
@@ -27,11 +40,24 @@ func main() {
 		c.JSON(200, gin.H{"status": "ok"})
 	})
 
-	// Wire up RewardHandler (using dummy repo for now)
-	var dummyRepo repo.RewardRepository // TODO: Replace with actual implementation
-	rewardService := &service.RewardService{Repo: dummyRepo}
+	// Wire up RewardHandler with real repository implementation
+	kafkaProducer := &infra.KafkaProducer{}
+
+	// Redis idempotency implementation
+	redisIdem := &infra.RedisIdempotencyStoreImpl{Client: redisClient}
+
+	repoImpl := &repo.RewardRepositoryImpl{
+		DB:            db,
+		Redis:         redisIdem,
+		KafkaProducer: kafkaProducer,
+	}
+
+	rewardService := &service.RewardService{Repo: repoImpl}
 	rewardHandler := &api.RewardHandler{Service: rewardService}
-	rewardHandler.RegisterRoutes(r)
+	// Protect API routes with JWT middleware
+	jwtSecret := os.Getenv("JWT_SECRET")
+	v1 := r.Group("/api/v1", auth.JWT(jwtSecret))
+	rewardHandler.RegisterRoutes(v1)
 
 	logrus.Infof("Starting server on port %s", port)
 	r.Run(":" + port)

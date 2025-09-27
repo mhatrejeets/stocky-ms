@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 
 	"github.com/IBM/sarama"
+	"github.com/mhatrejeets/stocky-ms/internal/model"
 	"github.com/sirupsen/logrus"
 )
 
@@ -12,16 +13,9 @@ type KafkaProducer struct {
 	Producer sarama.SyncProducer
 }
 
-type RewardCreatedEvent struct {
-	RewardID      string `json:"reward_id"`
-	UserID        string `json:"user_id"`
-	StockSymbol   string `json:"stock_symbol"`
-	Shares        string `json:"shares"`
-	RewardedAt    string `json:"rewarded_at"`
-	CorrelationID string `json:"correlation_id"`
-}
+// Use model.RewardCreatedEvent
 
-func (kp *KafkaProducer) PublishRewardCreated(ctx context.Context, event RewardCreatedEvent) error {
+func (kp *KafkaProducer) PublishRewardCreated(ctx context.Context, event model.RewardCreatedEvent) error {
 	msgBytes, err := json.Marshal(event)
 	if err != nil {
 		return err
@@ -43,7 +37,7 @@ func (kp *KafkaProducer) PublishRewardCreated(ctx context.Context, event RewardC
 }
 
 // Noop fallback
-func NoopPublishRewardCreated(ctx context.Context, event RewardCreatedEvent) error {
+func NoopPublishRewardCreated(ctx context.Context, event model.RewardCreatedEvent) error {
 	logrus.Info("Noop publish: ", event)
 	return nil
 }

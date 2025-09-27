@@ -14,15 +14,12 @@ type RewardHandler struct {
 	Service *service.RewardService
 }
 
-func (h *RewardHandler) RegisterRoutes(r *gin.Engine) {
-	v1 := r.Group("/api/v1")
-	{
-		v1.POST("/reward", h.CreateReward)
-		v1.GET("/today-stocks/:userId", h.GetTodayStocks)
-		v1.GET("/historical-inr/:userId", h.GetHistoricalINR)
-		v1.GET("/stats/:userId", h.GetStats)
-		v1.GET("/portfolio/:userId", h.GetPortfolio)
-	}
+func (h *RewardHandler) RegisterRoutes(rg *gin.RouterGroup) {
+	rg.POST("/reward", h.CreateReward)
+	rg.GET("/today-stocks/:userId", h.GetTodayStocks)
+	rg.GET("/historical-inr/:userId", h.GetHistoricalINR)
+	rg.GET("/stats/:userId", h.GetStats)
+	rg.GET("/portfolio/:userId", h.GetPortfolio)
 }
 
 func (h *RewardHandler) CreateReward(c *gin.Context) {

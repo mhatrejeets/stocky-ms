@@ -6,6 +6,8 @@ import (
 	"strings"
 	"time"
 
+	"database/sql"
+
 	"github.com/redis/go-redis/v9"
 	"github.com/shopspring/decimal"
 )
@@ -58,7 +60,11 @@ func StartHourlyPriceUpdater(ctx context.Context, rdb *redis.Client, symbols []s
 				val := decimal.NewFromFloat(rand.Float64()*1000 + 100)
 				updated := time.Now()
 				rdb.Set(ctx, "price:"+symbol, val.String()+","+updated.Format(time.RFC3339), 2*time.Hour)
-				// TODO: Update DB stock_prices table
+				// Update DB stock_prices table
+				if db, ok := ctx.Value("db").(*sql.DB); ok && db != nil {
+					_, _ = db.ExecContext(ctx, `INSERT INTO stock_prices (symbol, price, updated_at) VALUES ($1, $2, $3)
+						ON CONFLICT (symbol) DO UPDATE SET price = EXCLUDED.price, updated_at = EXCLUDED.updated_at`, symbol, val.String(), updated)
+				}
 			}
 			time.Sleep(time.Hour)
 		}
