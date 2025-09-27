@@ -41,7 +41,7 @@ func main() {
 		c.JSON(200, gin.H{"status": "ok"})
 	})
 
-	// Wire up RewardHandler with real repository implementation
+	//Kafka implementation``
 	kafkaConfig := sarama.NewConfig()
 	kafkaConfig.Producer.Return.Successes = true
 	brokers := []string{os.Getenv("KAFKA_BROKERS")}
@@ -62,7 +62,7 @@ func main() {
 
 	rewardService := &service.RewardService{Repo: repoImpl}
 	rewardHandler := &api.RewardHandler{Service: rewardService}
-	// Protect API routes with JWT middleware
+	// API JWT middleware
 	jwtSecret := os.Getenv("JWT_SECRET")
 	v1 := r.Group("/api/v1", auth.JWT(jwtSecret))
 	rewardHandler.RegisterRoutes(v1)

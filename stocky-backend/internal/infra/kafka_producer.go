@@ -13,7 +13,6 @@ type KafkaProducer struct {
 	Producer sarama.SyncProducer
 }
 
-// Use model.RewardCreatedEvent
 
 func (kp *KafkaProducer) PublishRewardCreated(ctx context.Context, event model.RewardCreatedEvent) error {
 	msgBytes, err := json.Marshal(event)

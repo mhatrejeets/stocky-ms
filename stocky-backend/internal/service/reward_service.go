@@ -71,22 +71,18 @@ func (s *RewardService) CreateReward(ctx context.Context, userID string, req mod
 	return CreateRewardResult{id, false, nil}
 }
 
-// List all rewards for today for a user
 func (s *RewardService) ListRewardsForDate(ctx context.Context, userID string) ([]model.Reward, error) {
 	return s.Repo.ListRewardsForDate(ctx, userID, time.Now())
 }
 
-// Get historical INR values for a user
 func (s *RewardService) GetHistoricalINR(ctx context.Context, userID, from, to, page, size string) ([]model.HistoricalINR, error) {
 	return s.Repo.GetHistoricalINR(ctx, userID, from, to, page, size)
 }
 
-// Get stats for a user
 func (s *RewardService) GetStats(ctx context.Context, userID string) (model.Stats, error) {
 	return s.Repo.GetStats(ctx, userID)
 }
 
-// Get portfolio for a user
 func (s *RewardService) GetPortfolio(ctx context.Context, userID string) (model.Portfolio, error) {
 	return s.Repo.GetPortfolio(ctx, userID)
 }

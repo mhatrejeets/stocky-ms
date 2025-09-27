@@ -12,9 +12,7 @@ import (
 	"github.com/shopspring/decimal"
 )
 
-var knownSymbols = []string{"RELIANCE", "TCS", "INFY"}
 
-// MockPriceProvider returns random prices and caches in Redis
 
 type MockPriceProvider struct {
 	Redis *redis.Client

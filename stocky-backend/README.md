@@ -176,7 +176,7 @@ Headers:
 
 ---
 
-## 🧠 System Flow
+##  System Flow
 
 1. **Reward Creation:**  
 	 - Validates input, checks idempotency (Redis + DB).
@@ -267,16 +267,4 @@ make test
 
 ---
 
-## 👨‍💻 Contributing
 
-PRs welcome! Please open issues for bugs or feature requests.
-
----
-
-## 🏁 License
-
-MIT
-
----
-
-> Made with ❤️ for robust, scalable fintech systems.
