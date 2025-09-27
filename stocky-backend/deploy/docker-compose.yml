@@ -5,12 +5,31 @@ services:
       context: ..
       dockerfile: deploy/Dockerfile
     env_file:
-      - ../.env.sample
+      - ../.env
     ports:
       - "8080:8080"
     depends_on:
       - db
       - redis
+      - kafka
+  kafka:
+    image: bitnami/kafka:3.6
+    environment:
+      - KAFKA_BROKER_ID=1
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092
+      - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
+      - ALLOW_PLAINTEXT_LISTENER=yes
+    ports:
+      - "9092:9092"
+    depends_on:
+      - zookeeper
+  zookeeper:
+    image: bitnami/zookeeper:3.8
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes
+    ports:
+      - "2181:2181"
   db:
     image: postgres:15
     environment:

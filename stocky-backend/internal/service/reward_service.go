@@ -11,6 +11,7 @@ import (
 	"github.com/mhatrejeets/stocky-ms/internal/repo"
 
 	"github.com/go-playground/validator/v10"
+	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 )
 
@@ -47,13 +48,13 @@ func (s *RewardService) CreateReward(ctx context.Context, userID string, req mod
 	uniqueHash := sha256.Sum256([]byte(uniqueStr))
 	uniqueHashHex := hex.EncodeToString(uniqueHash[:])
 
-	// Dedup check
 	exists, existingID := s.Repo.ExistsByUniqueHashOrIdempotency(ctx, uniqueHashHex, idempotencyKey)
 	if exists {
 		return CreateRewardResult{existingID, true, errors.New("duplicate reward")}
 	}
 
 	reward := model.Reward{
+		ID:             uuid.NewString(),
 		UserID:         userID,
 		StockSymbol:    req.StockSymbol,
 		Shares:         shares,
@@ -61,6 +62,7 @@ func (s *RewardService) CreateReward(ctx context.Context, userID string, req mod
 		UniqueHash:     uniqueHashHex,
 		IdempotencyKey: idempotencyKey,
 		Status:         "active",
+		CreatedAt:      time.Now(),
 	}
 	id, err := s.Repo.CreateReward(ctx, reward)
 	if err != nil {

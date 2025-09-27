@@ -14,15 +14,12 @@ type RewardHandler struct {
 	Service *service.RewardService
 }
 
-func (h *RewardHandler) RegisterRoutes(r *gin.Engine) {
-	v1 := r.Group("/api/v1")
-	{
-		v1.POST("/reward", h.CreateReward)
-		v1.GET("/today-stocks/:userId", h.GetTodayStocks)
-		v1.GET("/historical-inr/:userId", h.GetHistoricalINR)
-		v1.GET("/stats/:userId", h.GetStats)
-		v1.GET("/portfolio/:userId", h.GetPortfolio)
-	}
+func (h *RewardHandler) RegisterRoutes(rg *gin.RouterGroup) {
+	rg.POST("/reward", h.CreateReward)
+	rg.GET("/today-stocks/:userId", h.GetTodayStocks)
+	rg.GET("/historical-inr/:userId", h.GetHistoricalINR)
+	rg.GET("/stats/:userId", h.GetStats)
+	rg.GET("/portfolio/:userId", h.GetPortfolio)
 }
 
 func (h *RewardHandler) CreateReward(c *gin.Context) {
@@ -65,6 +62,13 @@ func (h *RewardHandler) GetHistoricalINR(c *gin.Context) {
 	to := c.Query("to")
 	page := c.Query("page")
 	size := c.Query("size")
+	// Set default date range if missing
+	if from == "" {
+		from = "2000-01-01T00:00:00Z"
+	}
+	if to == "" {
+		to = "2100-01-01T00:00:00Z"
+	}
 	result, err := h.Service.GetHistoricalINR(c.Request.Context(), userID, from, to, page, size)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})

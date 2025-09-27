@@ -43,6 +43,15 @@ type Reward struct {
 
 type CreateRewardRequest struct {
 	StockSymbol string `json:"stock_symbol" validate:"required"`
-	Shares      string `json:"shares" validate:"required,decimal"`
+	Shares      string `json:"shares" validate:"required,numeric"`
 	RewardedAt  string `json:"rewarded_at" validate:"required,datetime=2006-01-02T15:04:05Z07:00"`
+}
+
+type RewardCreatedEvent struct {
+	RewardID      string `json:"reward_id"`
+	UserID        string `json:"user_id"`
+	StockSymbol   string `json:"stock_symbol"`
+	Shares        string `json:"shares"`
+	RewardedAt    string `json:"rewarded_at"`
+	CorrelationID string `json:"correlation_id"`
 }
