@@ -203,23 +203,57 @@ func (r *RewardRepositoryImpl) ListRewardsForDate(ctx context.Context, userID st
 
 func (r *RewardRepositoryImpl) GetHistoricalINR(ctx context.Context, userID, from, to, page, size string) ([]model.HistoricalINR, error) {
 	// Query historical INR values for a user
-	query := `SELECT to_char(rewarded_at, 'YYYY-MM-DD') as date, SUM(shares) as inr_value, false as is_stale FROM rewards WHERE user_id = $1 AND rewarded_at >= $2 AND rewarded_at <= $3 GROUP BY date ORDER BY date`
+	// For each day, sum shares per symbol, then multiply by current price
+	query := `SELECT to_char(rewarded_at, 'YYYY-MM-DD') as date, stock_symbol, SUM(shares) as total_shares FROM rewards WHERE user_id = $1 AND rewarded_at >= $2 AND rewarded_at <= $3 GROUP BY date, stock_symbol ORDER BY date`
 	rows, err := r.DB.QueryContext(ctx, query, userID, from, to)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var result []model.HistoricalINR
+	// Map date -> symbol -> shares
+	type daySymbol struct {
+		date   string
+		symbol string
+	}
+	dayShares := make(map[daySymbol]decimal.Decimal)
+	dateSet := make(map[string]struct{})
 	for rows.Next() {
-		var h model.HistoricalINR
-		var inrValueStr string
-		err := rows.Scan(&h.Date, &inrValueStr, &h.IsStale)
+		var date, symbol, sharesStr string
+		err := rows.Scan(&date, &symbol, &sharesStr)
 		if err != nil {
 			return nil, err
 		}
-		h.INRValue, _ = decimal.NewFromString(inrValueStr)
-		result = append(result, h)
+		shares, _ := decimal.NewFromString(sharesStr)
+		dayShares[daySymbol{date, symbol}] = shares
+		dateSet[date] = struct{}{}
 	}
+	// For each date, sum INR value using current price
+	var result []model.HistoricalINR
+	for date := range dateSet {
+		var totalINR decimal.Decimal
+		for ds, shares := range dayShares {
+			if ds.date == date {
+				// Get current price for symbol
+				var priceStr string
+				err := r.DB.QueryRowContext(ctx, "SELECT price FROM stock_prices WHERE symbol = $1", ds.symbol).Scan(&priceStr)
+				var price decimal.Decimal
+				if err == nil {
+					price, _ = decimal.NewFromString(priceStr)
+				} else {
+					price = decimal.Zero
+				}
+				totalINR = totalINR.Add(shares.Mul(price))
+			}
+		}
+		result = append(result, model.HistoricalINR{
+			Date:     date,
+			INRValue: totalINR,
+			IsStale:  false,
+		})
+	}
+	// Sort result by date ascending
+	// (optional, for consistent output)
+	// sort.Slice(result, func(i, j int) bool { return result[i].Date < result[j].Date })
 	return result, nil
 }
 
