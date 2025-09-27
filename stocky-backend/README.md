@@ -267,4 +267,8 @@ make test
 
 ---
 
+## Note
+Populate the stock_prices table with this query earlier to get correct the actuals values for stock prices and not 0.
+
+`INSERT INTO stock_prices (symbol, price, updated_at) VALUES ('TCS','3500.00',NOW()),('INFY','1500.00',NOW()),('RELIANCE','2500.00',NOW()),('HDFCBANK','1650.50',NOW()),('ICICIBANK','1020.75',NOW()),('SBIN','650.25',NOW()),('WIPRO','420.00',NOW()),('BAJFINANCE','7200.00',NOW()),('ADANIENT','2700.00',NOW()),('HINDUNILVR','2450.00',NOW()),('ITC','455.75',NOW()),('LT','3750.00',NOW()),('AXISBANK','1125.00',NOW()),('TITAN','3400.00',NOW()),('MARUTI','10400.00',NOW()),('ONGC','195.50',NOW()),('COALINDIA','320.00',NOW()),('POWERGRID','255.30',NOW()),('JSWSTEEL','850.00',NOW()),('ASIANPAINT','3300.00',NOW()),('APPLE','195.00',NOW()),('GOOGL','135.00',NOW()),('AMZN','140.50',NOW()),('TSLA','245.00',NOW()),('MSFT','320.00',NOW()) ON CONFLICT (symbol) DO UPDATE SET price = EXCLUDED.price, updated_at = NOW();`
 
